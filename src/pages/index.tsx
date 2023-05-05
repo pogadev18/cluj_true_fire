@@ -1,14 +1,24 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import PageLayout from "~/components/PageLayout";
+import { toast } from "react-hot-toast";
 
 import { META_TITLE } from "~/utils/constants";
 import { api } from "~/utils/api";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
+import Question from "~/components/Question";
 
 const Home: NextPage = () => {
-  const { data: questions, isLoading: loadingQuestions } =
-    api.question.getAll.useQuery();
+  const {
+    data: questions,
+    isLoading: loadingQuestions,
+    error,
+  } = api.question.getAll.useQuery();
+
+  if (error) {
+    toast.error(error.message);
+  }
+
   return (
     <>
       <Head>
@@ -21,13 +31,25 @@ const Home: NextPage = () => {
           {loadingQuestions ? (
             <LoadingSpinner />
           ) : (
-            <ul>
-              {questions?.map(({ question }) => (
-                <li key={question.id}>{question.title}</li>
-              ))}
-            </ul>
+            <>
+              <div className="hero my-10">
+                <h1 className="mb-2 text-3xl">Question&apos;s History</h1>
+                <p>
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+                  Accusamus, cupiditate nostrum itaque, est molestiae fuga
+                  voluptas provident reiciendis temporibus necessitatibus
+                  commodi facere aliquam ullam numquam. Tempora exercitationem
+                  magnam adipisci dolor iquam ullam numquam. Tempora
+                  exercitationem magnam adipisci dolor.
+                </p>
+              </div>
+              <ul>
+                {questions?.map((question) => (
+                  <Question key={question.question.id} {...question} />
+                ))}
+              </ul>
+            </>
           )}
-          <h1>Welcome</h1>
         </section>
       </PageLayout>
     </>

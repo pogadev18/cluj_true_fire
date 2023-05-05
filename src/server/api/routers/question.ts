@@ -78,11 +78,18 @@ export const questionRouter = createTRPCRouter({
       }
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const questions = await ctx.prisma.question.findMany({
-      take: 100,
-      orderBy: { createdAt: "desc" },
-    });
+    try {
+      const questions = await ctx.prisma.question.findMany({
+        take: 100,
+        orderBy: { createdAt: "desc" },
+      });
 
-    return addUserDataToQuestion(questions);
+      return addUserDataToQuestion(questions);
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Unfornately, we could not get the questions at this time.",
+      });
+    }
   }),
 });

@@ -22,7 +22,7 @@ const Header = () => {
     });
 
   return (
-    <header className="border-order-slate-300 flex h-12 items-center justify-between rounded bg-blue-300 px-4 py-8 shadow-md">
+    <header className="flex h-12 items-center justify-between rounded border-b border-slate-300 px-4 py-8">
       <h1 className="text-xl font-bold uppercase">Cluj True Fire</h1>
       <div className="flex items-center gap-5">
         <button
