@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 import Modal from "./Modal";
 import AddQuestionForm from "./AddQuestionForm";
@@ -23,7 +24,9 @@ const Header = () => {
 
   return (
     <header className="flex h-12 items-center justify-between rounded border-b border-slate-300 px-4 py-8">
-      <h1 className="text-xl font-bold uppercase">Cluj True Fire</h1>
+      <h1 className="text-xl font-bold uppercase">
+        <Link href="/">Cluj True Fire</Link>
+      </h1>
       <div className="flex items-center gap-5">
         <button
           className="color-black rounded bg-yellow-400 px-4 py-2 transition-all hover:bg-yellow-500"

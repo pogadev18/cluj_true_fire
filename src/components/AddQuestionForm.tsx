@@ -11,7 +11,7 @@ export const formSchema = z.object({
     .string()
     .min(1, "Title is required")
     .max(40, "Title is too long (max 40 characters)"),
-  details: z.string().optional(),
+  details: z.string().max(255, "Description is too long").optional(),
 });
 
 export type FormData = z.infer<typeof formSchema>;
@@ -55,6 +55,9 @@ const AddQuestionForm: FC<AddQuestionFormProps> = ({
           rows={5}
           className="block w-full resize-none rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         />
+        {errors.details && (
+          <p className="text-sm  text-red-600">{errors.details.message}</p>
+        )}
       </div>
       {mutationInProgress ? (
         <div className="my-4">

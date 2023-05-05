@@ -7,7 +7,8 @@ import { TRPCError } from "@trpc/server";
 
 import { formSchema } from "~/components/AddQuestionForm";
 
-import { filterUserForClient } from "~/utils/filterUserForClient";
+import { filterUserForClient } from "~/server/helpers/filterUserForClient";
+import { z } from "zod";
 
 const addUserDataToQuestion = async (questions: Question[]) => {
   const userId = questions.map((question) => question.authorId);
@@ -92,4 +93,19 @@ export const questionRouter = createTRPCRouter({
       });
     }
   }),
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const question = await ctx.prisma.question.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!question)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No question found",
+        });
+
+      return (await addUserDataToQuestion([question]))[0];
+    }),
 });
