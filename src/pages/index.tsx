@@ -3,8 +3,12 @@ import Head from "next/head";
 import PageLayout from "~/components/PageLayout";
 
 import { META_TITLE } from "~/utils/constants";
+import { api } from "~/utils/api";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
 
 const Home: NextPage = () => {
+  const { data: questions, isLoading: loadingQuestions } =
+    api.question.getAll.useQuery();
   return (
     <>
       <Head>
@@ -14,6 +18,15 @@ const Home: NextPage = () => {
       </Head>
       <PageLayout>
         <section className="mt-5">
+          {loadingQuestions ? (
+            <LoadingSpinner />
+          ) : (
+            <ul>
+              {questions?.map(({ question }) => (
+                <li key={question.id}>{question.title}</li>
+              ))}
+            </ul>
+          )}
           <h1>Welcome</h1>
         </section>
       </PageLayout>
