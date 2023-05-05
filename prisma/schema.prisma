@@ -3,18 +3,31 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model Question {
-  id         String      @id @default(cuid())
-  authorId   String
-  createdAt  DateTime @default(now())
-  isSolved   Boolean  @default(false)
-  title      String
-  details    String?   @db.VarChar(255)
+  id        String   @id @default(cuid())
+  authorId  String
+  createdAt DateTime @default(now())
+  isSolved  Boolean  @default(false)
+  title     String
+  details   String?  @db.VarChar(255)
+  Answer    Answer?  @relation(fields: [answerId], references: [id])
+  answerId  String?
 
   @@unique([authorId, title])
+  @@index([answerId])
+}
+
+model Answer {
+  createdAt DateTime @default(now())
+
+  id     String @id @default(cuid())
+  answer String
+
+  questions Question[]
+  authorId  String
 }

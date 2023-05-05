@@ -4,9 +4,12 @@ import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/router";
 
 import { api } from "~/utils/api";
-import PageLayout from "~/components/PageLayout";
 import { META_TITLE } from "~/utils/constants";
-import { LoadingPage } from "~/components/LoadingSpinner";
+
+import PageLayout from "~/components/PageLayout";
+import { LoadingSpinner } from "~/components/LoadingSpinner";
+import SubmitAnswerForm from "~/components/SubmitAnswerForm";
+import { toast } from "react-hot-toast";
 
 const SingeQuestionPage: NextPage = () => {
   const router = useRouter();
@@ -17,7 +20,15 @@ const SingeQuestionPage: NextPage = () => {
   const { isLoading: loadingQuestion, data: question } =
     api.question.getById.useQuery({ id: id as string });
 
-  if (loadingQuestion) return <LoadingPage />;
+  const { mutate: submitAnswer, isLoading: submittingAnswer } =
+    api.answer.create.useMutation({
+      onSuccess: () => {
+        toast.success("Answer successfully added");
+      },
+    });
+
+  const { data: answers, isLoading: loadingAnswers } =
+    api.answer.getAll.useQuery();
 
   const isUserQuestionOwner = user?.id === question?.question.authorId;
 
@@ -30,10 +41,49 @@ const SingeQuestionPage: NextPage = () => {
       </Head>
       <PageLayout>
         <section className="mt-5">
-          <h1 className="mb-5 text-3xl">{question?.question.title}</h1>
-          {question?.question.details && <p>{question?.question?.details}</p>}
+          {loadingQuestion ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="question-wrapper flex-grow">
+                <h1 className="mb-5 text-3xl">{question?.question.title}</h1>
+                <div className="answerFormAndAnswerListWrapper flex justify-between">
+                  <div className="answerForm w-1/2 ">
+                    {question?.question.details && (
+                      <p>{question?.question?.details}</p>
+                    )}
+                    {!isUserQuestionOwner && (
+                      <div>
+                        <SubmitAnswerForm
+                          mutationInProgress={submittingAnswer}
+                          onSubmit={(data) => submitAnswer(data)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="answer-list">
+                    {loadingAnswers ? (
+                      <LoadingSpinner />
+                    ) : (
+                      <ul>
+                        {answers?.map((answer) => (
+                          <li key={answer.id}>{answer.answer}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {isUserQuestionOwner && (
+                <div className="resolve-question">
+                  <button className="rounded-md  p-4 font-bold underline">
+                    Resolve
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </section>
-        {isUserQuestionOwner && <button>Resolve</button>}
       </PageLayout>
     </>
   );
