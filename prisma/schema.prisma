@@ -8,6 +8,13 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Example {
-    id       Int      @id @default(autoincrement())
+model Question {
+  id         String      @id @default(cuid())
+  authorId   String
+  createdAt  DateTime @default(now())
+  isSolved   Boolean  @default(false)
+  title      String
+  details    String?   @db.VarChar(255)
+
+  @@unique([authorId, title])
 }
