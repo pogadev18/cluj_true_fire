@@ -9,8 +9,12 @@ import PageLayout from "~/components/PageLayout";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import SubmitAnswerForm from "~/components/SubmitAnswerForm";
 import { toast } from "react-hot-toast";
+import Answer from "~/components/Answer";
 
 const SingeQuestionPage: NextPage = () => {
+  // trpc cache context
+  const ctx = api.useContext();
+
   const router = useRouter();
   const { id: questionId } = router.query;
 
@@ -24,14 +28,9 @@ const SingeQuestionPage: NextPage = () => {
     api.answer.add.useMutation({
       onSuccess: () => {
         toast.success("Answer successfully added");
+        void ctx.question.getById.invalidate({ id: questionId as string });
       },
     });
-
-  // todo: add error handling
-  if (!data) return null;
-
-  console.log("data!!!", data);
-  const { question, answers } = data;
 
   return (
     <>
@@ -47,14 +46,16 @@ const SingeQuestionPage: NextPage = () => {
           ) : (
             <div className="flex items-center justify-between">
               <div className="question-wrapper flex-grow">
-                <h1 className="mb-5 text-3xl">{question?.content.title}</h1>
-                <div className="answerFormAndAnswerListWrapper flex justify-between">
-                  <div className="answerForm w-1/2 ">
-                    {question?.content.details && (
-                      <p>{question?.content?.details}</p>
+                <h1 className="mb-5 text-3xl">
+                  {data?.question?.content.title}
+                </h1>
+                <div className="answerFormAndAnswerListWrapper flex gap-10">
+                  <div className="answerForm flex-1">
+                    {data?.question?.content.details && (
+                      <p>{data?.question?.content?.details}</p>
                     )}
-                    {!question.isUserOwner && (
-                      <div>
+                    {!data?.question.isUserOwner && (
+                      <div className=" py-5">
                         <SubmitAnswerForm
                           mutationInProgress={submittingAnswer}
                           onSubmit={(data) =>
@@ -67,12 +68,17 @@ const SingeQuestionPage: NextPage = () => {
                       </div>
                     )}
                   </div>
-                  <div className="answer-list">
-                    <p>answers...</p>
+                  <div className="answer-list flex-1 border-l border-slate-400 pl-5">
+                    <h2 className="text-2xl">Raspunsuri</h2>
+                    <ul className="mt-5">
+                      {data?.answers?.map((answer) => (
+                        <Answer key={answer.content.id} {...answer} />
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
-              {question.isUserOwner && (
+              {data?.question.isUserOwner && (
                 <div className="resolve-question">
                   <button className="rounded-md  p-4 font-bold underline">
                     Resolve

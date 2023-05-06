@@ -1,4 +1,5 @@
-import { Answer, Prisma, Question } from "@prisma/client";
+import type { Answer, Question } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
@@ -38,7 +39,11 @@ export const questionRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
       });
 
-      return addUserDataToEntity(questions);
+      // todo: try to find a better solution where to cast this (same as below)
+      return (await addUserDataToEntity(questions)).map((question) => ({
+        ...question,
+        content: question.content as Question,
+      }));
     } catch (error) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
@@ -56,6 +61,7 @@ export const questionRouter = createTRPCRouter({
       // grab all the answers related to this question and send them to client
       const answers = await ctx.prisma.answer.findMany({
         where: { questionId: input.id },
+        orderBy: { createdAt: "desc" },
       });
 
       if (!question)
