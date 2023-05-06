@@ -10,10 +10,10 @@ dayjs.extend(relativeTime);
 
 type QuestionWithUser = RouterOutputs["question"]["getAll"][number];
 
-const Question: FC<QuestionWithUser> = ({ author, question }) => {
+const Question: FC<QuestionWithUser> = ({ author, content }) => {
   return (
     <li
-      key={question.id}
+      key={content.id}
       className="flex flex-grow items-center justify-between border-b border-slate-300 p-4 py-8"
     >
       <div className="image-and-title-wrapper flex gap-3">
@@ -30,20 +30,20 @@ const Question: FC<QuestionWithUser> = ({ author, question }) => {
               <span>{`@${author.email} `}</span>
             </Link>
             <span className="font-thin">{` · ${dayjs(
-              question.createdAt
+              content.createdAt
             ).fromNow()}`}</span>
           </div>
           <span className="text-2xl">
-            <Link href={`/question/${question.id}`}>{question.title}</Link>
+            <Link href={`/question/${content.id}`}>{content.title}</Link>
           </span>
         </div>
       </div>
       <div
         className={`question-status rounded-md p-3 py-1 ${
-          question.isSolved ? "bg-green-600" : "bg-red-500"
+          content.isSolved ? "bg-green-600" : "bg-red-500"
         }  text-white`}
       >
-        {question.isSolved ? "solved" : "unresolved"}
+        {content.isSolved ? "solved" : "unresolved"}
       </div>
     </li>
   );

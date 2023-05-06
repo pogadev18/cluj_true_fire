@@ -45,7 +45,7 @@ const Home: NextPage = () => {
               </div>
               <ul>
                 {questions?.map((question) => (
-                  <Question key={question.question.id} {...question} />
+                  <Question key={question.content.id} {...question} />
                 ))}
               </ul>
             </>

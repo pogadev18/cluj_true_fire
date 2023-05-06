@@ -1,57 +1,12 @@
-import { clerkClient } from "@clerk/nextjs/server";
-
+import type { Answer, Question } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import type { Question } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 import { formSchema } from "~/components/AddQuestionForm";
 
-import { filterUserForClient } from "~/utils/filterUserForClient";
-
-const addUserDataToQuestion = async (questions: Question[]) => {
-  const userId = questions.map((question) => question.authorId);
-
-  const users = (
-    await clerkClient.users.getUserList({
-      userId,
-      limit: 110,
-    })
-  ).map(filterUserForClient);
-
-  return questions.map((question) => {
-    const author = users.find((user) => user.id === question.authorId);
-
-    if (!author) {
-      console.error("AUTHOR NOT FOUND", question);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Author for question not found. Question ID: ${question.id}, USER ID: ${question.authorId}`,
-      });
-    }
-
-    // USE IF YOU CONNECT WITH EXTERNAL SERVICES (google, github, etc...)
-    // if (!author.username) {
-    //   // use the ExternalUsername
-    //   if (!author.externalUsername) {
-    //     throw new TRPCError({
-    //       code: "INTERNAL_SERVER_ERROR",
-    //       message: `Author has no GitHub Account: ${author.id}`,
-    //     });
-    //   }
-
-    //   author.username = author.externalUsername;
-    // }
-
-    return {
-      question,
-      author: {
-        ...author,
-        email: author.email ?? "(email not found)",
-      },
-    };
-  });
-};
+import { addUserDataToEntity } from "~/server/helpers/findUserInClerk";
+import { z } from "zod";
 
 export const questionRouter = createTRPCRouter({
   create: protectedProcedure
@@ -84,7 +39,11 @@ export const questionRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
       });
 
-      return addUserDataToQuestion(questions);
+      // todo: try to find a better solution where to cast this (same as below)
+      return (await addUserDataToEntity(questions)).map((question) => ({
+        ...question,
+        content: question.content as Question,
+      }));
     } catch (error) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
@@ -92,4 +51,40 @@ export const questionRouter = createTRPCRouter({
       });
     }
   }),
+  getById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const question = await ctx.prisma.question.findUnique({
+        where: { id: input.id },
+      });
+
+      // grab all the answers related to this question and send them to client
+      const answers = await ctx.prisma.answer.findMany({
+        where: { questionId: input.id },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (!question)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No question found",
+        });
+
+      const questionAndUserData = (await addUserDataToEntity([question]))[0];
+      const answerAndUserData = await addUserDataToEntity(answers);
+      // todo: mabye try to cast this in `findUserInClert.ts`? - tried with typegurad function but not worked
+      return {
+        question: {
+          ...questionAndUserData,
+          content: questionAndUserData?.content as Question,
+          isUserOwner: ctx.auth.userId === questionAndUserData?.author.id,
+        },
+        answers: answerAndUserData.map((answer) => {
+          return {
+            ...answer,
+            content: answer?.content as Answer,
+          };
+        }),
+      };
+    }),
 });
