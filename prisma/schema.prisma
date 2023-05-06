@@ -15,19 +15,20 @@ model Question {
   isSolved  Boolean  @default(false)
   title     String
   details   String?  @db.VarChar(255)
-  Answer    Answer?  @relation(fields: [answerId], references: [id])
-  answerId  String?
+  answers   Answer[]
 
   @@unique([authorId, title])
-  @@index([answerId])
 }
 
 model Answer {
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
-  id     String @id @default(cuid())
-  answer String
+  id         String @id @default(cuid())
+  content    String
+  authorId   String
 
-  questions Question[]
-  authorId  String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+
+  @@index([questionId])
 }

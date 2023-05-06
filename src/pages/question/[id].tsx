@@ -13,24 +13,24 @@ import { toast } from "react-hot-toast";
 
 const SingeQuestionPage: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id: questionId } = router.query;
 
   // render this client-side until fix with SSG or wait till nex13 release
   const { user } = useUser();
   const { isLoading: loadingQuestion, data: question } =
-    api.question.getById.useQuery({ id: id as string });
+    api.question.getById.useQuery(
+      { id: questionId as string },
+      { enabled: !!questionId }
+    );
 
   const { mutate: submitAnswer, isLoading: submittingAnswer } =
-    api.answer.create.useMutation({
+    api.answer.add.useMutation({
       onSuccess: () => {
         toast.success("Answer successfully added");
       },
     });
 
-  const { data: answers, isLoading: loadingAnswers } =
-    api.answer.getAll.useQuery();
-
-  const isUserQuestionOwner = user?.id === question?.question.authorId;
+  const isUserQuestionOwner = user?.id === question?.content.authorId;
 
   return (
     <>
@@ -46,31 +46,28 @@ const SingeQuestionPage: NextPage = () => {
           ) : (
             <div className="flex items-center justify-between">
               <div className="question-wrapper flex-grow">
-                <h1 className="mb-5 text-3xl">{question?.question.title}</h1>
+                <h1 className="mb-5 text-3xl">{question?.content.title}</h1>
                 <div className="answerFormAndAnswerListWrapper flex justify-between">
                   <div className="answerForm w-1/2 ">
-                    {question?.question.details && (
-                      <p>{question?.question?.details}</p>
+                    {question?.content.details && (
+                      <p>{question?.content?.details}</p>
                     )}
                     {!isUserQuestionOwner && (
                       <div>
                         <SubmitAnswerForm
                           mutationInProgress={submittingAnswer}
-                          onSubmit={(data) => submitAnswer(data)}
+                          onSubmit={(data) =>
+                            submitAnswer({
+                              ...data,
+                              questionId: questionId as string,
+                            })
+                          }
                         />
                       </div>
                     )}
                   </div>
                   <div className="answer-list">
-                    {loadingAnswers ? (
-                      <LoadingSpinner />
-                    ) : (
-                      <ul>
-                        {answers?.map((answer) => (
-                          <li key={answer.id}>{answer.answer}</li>
-                        ))}
-                      </ul>
-                    )}
+                    <p>answers...</p>
                   </div>
                 </div>
               </div>

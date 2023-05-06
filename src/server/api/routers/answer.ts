@@ -1,10 +1,17 @@
 import { formSchema } from "~/components/SubmitAnswerForm";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import * as z from "zod";
+
+// connect question to answer using the "questionID" that is sent from the client
+const questionIdSchema = z.object({
+  questionId: z.string().nonempty("Question ID is required"),
+});
+const addAnswerSchema = formSchema.merge(questionIdSchema);
 
 export const answerRouter = createTRPCRouter({
-  create: protectedProcedure
-    .input(formSchema)
+  add: protectedProcedure
+    .input(addAnswerSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const authorId = ctx.auth.userId;

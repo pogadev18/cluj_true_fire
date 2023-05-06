@@ -7,7 +7,7 @@ import * as z from "zod";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export const formSchema = z.object({
-  answer: z
+  content: z
     .string()
     .min(10, "Answer is required (min 20 characters)")
     .max(40, "Title is too long (max 40 characters)"),
@@ -37,13 +37,13 @@ const SubmitAnswerForm: FC<SubmitAnswerFormProps> = ({
       <div className="form-control mb-5">
         <label htmlFor="answer">Your answer</label>
         <textarea
-          {...register("answer")}
+          {...register("content")}
           id="answer"
           rows={5}
           className="block w-full resize-none rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
         />
-        {errors.answer && (
-          <p className="text-sm  text-red-600">{errors.answer.message}</p>
+        {errors.content && (
+          <p className="text-sm  text-red-600">{errors.content.message}</p>
         )}
       </div>
       {mutationInProgress ? (
