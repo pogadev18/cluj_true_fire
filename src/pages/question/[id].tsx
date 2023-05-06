@@ -1,6 +1,7 @@
 import Head from "next/head";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import { toast } from "react-hot-toast";
 
 import { api } from "~/utils/api";
 import { META_TITLE } from "~/utils/constants";
@@ -8,7 +9,6 @@ import { META_TITLE } from "~/utils/constants";
 import PageLayout from "~/components/PageLayout";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import SubmitAnswerForm from "~/components/SubmitAnswerForm";
-import { toast } from "react-hot-toast";
 import Answer from "~/components/Answer";
 
 const SingeQuestionPage: NextPage = () => {
@@ -29,6 +29,9 @@ const SingeQuestionPage: NextPage = () => {
       onSuccess: () => {
         toast.success("Answer successfully added");
         void ctx.question.getById.invalidate({ id: questionId as string });
+      },
+      onError: (error) => {
+        toast.error(error.message);
       },
     });
 
@@ -80,7 +83,7 @@ const SingeQuestionPage: NextPage = () => {
               </div>
               {data?.question.isUserOwner && (
                 <div className="resolve-question">
-                  <button className="rounded-md  p-4 font-bold underline">
+                  <button className="rounded-md p-4 font-bold underline">
                     Resolve
                   </button>
                 </div>

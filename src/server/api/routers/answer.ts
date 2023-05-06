@@ -22,7 +22,10 @@ export const answerRouter = createTRPCRouter({
 
         await ctx.prisma.answer.create({ data: answerData });
       } catch (e) {
-        console.error(e);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Unfornately, we could not add your answer at this time.",
+        });
       }
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
