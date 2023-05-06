@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Answer, Prisma, Question } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
@@ -57,7 +57,6 @@ export const questionRouter = createTRPCRouter({
       const answers = await ctx.prisma.answer.findMany({
         where: { questionId: input.id },
       });
-      console.log("answers!!! >>>", answers);
 
       if (!question)
         throw new TRPCError({
@@ -67,8 +66,19 @@ export const questionRouter = createTRPCRouter({
 
       const questionAndUserData = (await addUserDataToEntity([question]))[0];
       const answerAndUserData = await addUserDataToEntity(answers);
-      console.log("questionAndUserData", questionAndUserData);
-      console.log("answerAndUserData", answerAndUserData);
-      return (await addUserDataToEntity([question]))[0];
+      // todo: mabye try to cast this in `findUserInClert.ts`? - tried with typegurad function but not worked
+      return {
+        question: {
+          ...questionAndUserData,
+          content: questionAndUserData?.content as Question,
+          isUserOwner: ctx.auth.userId === questionAndUserData?.author.id,
+        },
+        answers: answerAndUserData.map((answer) => {
+          return {
+            ...answer,
+            content: answer?.content as Answer,
+          };
+        }),
+      };
     }),
 });

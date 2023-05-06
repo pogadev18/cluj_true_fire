@@ -1,6 +1,5 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/router";
 
 import { api } from "~/utils/api";
@@ -16,12 +15,10 @@ const SingeQuestionPage: NextPage = () => {
   const { id: questionId } = router.query;
 
   // render this client-side until fix with SSG or wait till nex13 release
-  const { user } = useUser();
-  const { isLoading: loadingQuestion, data: question } =
-    api.question.getById.useQuery(
-      { id: questionId as string },
-      { enabled: !!questionId }
-    );
+  const { isLoading: loadingQuestion, data } = api.question.getById.useQuery(
+    { id: questionId as string },
+    { enabled: !!questionId }
+  );
 
   const { mutate: submitAnswer, isLoading: submittingAnswer } =
     api.answer.add.useMutation({
@@ -30,7 +27,11 @@ const SingeQuestionPage: NextPage = () => {
       },
     });
 
-  const isUserQuestionOwner = user?.id === question?.content.authorId;
+  // todo: add error handling
+  if (!data) return null;
+
+  console.log("data!!!", data);
+  const { question, answers } = data;
 
   return (
     <>
@@ -52,7 +53,7 @@ const SingeQuestionPage: NextPage = () => {
                     {question?.content.details && (
                       <p>{question?.content?.details}</p>
                     )}
-                    {!isUserQuestionOwner && (
+                    {!question.isUserOwner && (
                       <div>
                         <SubmitAnswerForm
                           mutationInProgress={submittingAnswer}
@@ -71,7 +72,7 @@ const SingeQuestionPage: NextPage = () => {
                   </div>
                 </div>
               </div>
-              {isUserQuestionOwner && (
+              {question.isUserOwner && (
                 <div className="resolve-question">
                   <button className="rounded-md  p-4 font-bold underline">
                     Resolve
