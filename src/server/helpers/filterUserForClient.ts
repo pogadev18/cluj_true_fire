@@ -14,7 +14,7 @@ export const filterUserForClient = (user: User) => {
 
   return {
     id: user.id,
-    email: user?.emailAddresses[0]?.emailAddress ?? null,
+    email: user?.emailAddresses[0]?.emailAddress.split("@")[0] ?? null,
     profileImageUrl: user.profileImageUrl,
   };
 };

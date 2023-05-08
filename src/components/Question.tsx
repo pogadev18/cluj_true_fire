@@ -39,12 +39,10 @@ const Question: FC<QuestionWithUser> = ({ author, content }) => {
         </div>
       </div>
       <div
-        className={`question-status rounded-md p-3 py-1 ${
-          content.isSolved ? "bg-green-600" : "bg-red-500"
-        }  text-white`}
-      >
-        {content.isSolved ? "solved" : "unresolved"}
-      </div>
+        className={`question-status rounded-100 h-8 w-8 rounded-full ${
+          content.isSolved ? "bg-green-700" : "bg-red-700"
+        }`}
+      />
     </li>
   );
 };
