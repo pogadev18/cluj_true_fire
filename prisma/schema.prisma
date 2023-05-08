@@ -9,26 +9,34 @@ datasource db {
 }
 
 model Question {
-  id        String   @id @default(cuid())
+  id        String             @id @default(cuid())
   authorId  String
-  createdAt DateTime @default(now())
-  isSolved  Boolean  @default(false)
+  createdAt DateTime           @default(now())
+  isSolved  Boolean            @default(false)
   title     String
-  details   String?  @db.VarChar(255)
+  details   String?            @db.VarChar(255)
   answers   Answer[]
+  category  QuestionCategory[]
 
   @@unique([authorId, title])
 }
 
 model Answer {
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  id         String @id @default(cuid())
-  content    String
-  authorId   String
+  id       String @id @default(cuid())
+  content  String
+  authorId String
 
   question   Question @relation(fields: [questionId], references: [id])
   questionId String
 
   @@index([questionId])
+}
+
+model QuestionCategory {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  name      String     @unique
+  question  Question[]
 }

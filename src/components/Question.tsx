@@ -8,9 +8,11 @@ import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
-type QuestionWithUser = RouterOutputs["question"]["getAll"][number];
+type QuestionWithUser =
+  RouterOutputs["question"]["getAll"]["questions"][number];
 
 const Question: FC<QuestionWithUser> = ({ author, content }) => {
+  console.log("content!!!", content);
   return (
     <li
       key={content.id}
