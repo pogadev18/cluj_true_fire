@@ -20,12 +20,19 @@ export const questionRouter = createTRPCRouter({
       try {
         const authorId = ctx.auth.userId;
 
-        const questionData = {
-          ...input,
-          authorId,
-        };
+        const clientCategories = input.categories?.map((cat) => ({
+          name: cat,
+        }));
 
-        await ctx.prisma.question.create({ data: questionData });
+        await ctx.prisma.question.create({
+          data: {
+            ...input,
+            authorId,
+            categories: {
+              connect: [...clientCategories],
+            },
+          },
+        });
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           if (error.code === "P2002") {
@@ -49,6 +56,7 @@ export const questionRouter = createTRPCRouter({
           cursor: cursor ? { id: cursor } : undefined,
           skip: 0,
           orderBy: { createdAt: "desc" },
+          include: { categories: true },
         });
 
         let nextCursor: typeof cursor | undefined = undefined;

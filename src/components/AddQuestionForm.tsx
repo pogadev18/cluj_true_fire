@@ -5,15 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Select from "react-select";
 
-import { categories } from "~/utils/constants";
-
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export const formSchema = z.object({
   title: z
     .string()
-    .min(10, "Titlul intrebarii este obligatoriu (min 20 caractere)")
-    .max(40, "Titlul este prea lung (max 40 caractere)"),
+    .min(10, "Titlul intrebarii este obligatoriu (min 20 caractere)"),
   categories: z
     .array(z.string(), { required_error: "Selecteaza minim o categorie" })
     .nonempty("Selecteaza minim o categorie"),
@@ -28,6 +25,7 @@ export const formSchema = z.object({
 export type FormData = z.infer<typeof formSchema>;
 
 export type AddQuestionFormProps = {
+  categories: { label: string; value: string }[] | undefined;
   onSubmit: SubmitHandler<FormData>;
   mutationInProgress: boolean;
 };
@@ -35,6 +33,7 @@ export type AddQuestionFormProps = {
 const AddQuestionForm: FC<AddQuestionFormProps> = ({
   mutationInProgress,
   onSubmit,
+  categories,
 }) => {
   const {
     control,
@@ -69,12 +68,12 @@ const AddQuestionForm: FC<AddQuestionFormProps> = ({
             <Select
               {...field}
               options={categories}
-              value={categories.filter((c) =>
-                (field.value || []).includes(c.value)
+              value={categories?.filter((c) =>
+                (field.value || []).includes(c.label)
               )}
               isMulti
               placeholder="Selecteaza categoriile"
-              onChange={(values) => field.onChange(values.map((v) => v.value))}
+              onChange={(values) => field.onChange(values.map((v) => v.label))}
             />
           )}
         />

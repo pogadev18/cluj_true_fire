@@ -7,19 +7,33 @@ import Modal from "./Modal";
 import AddQuestionForm from "./AddQuestionForm";
 
 import { api } from "~/utils/api";
+import AddQuestionCategoryForm from "./AddQuestionCategoryForm";
 
 const Header = () => {
   const [openQuestionModal, setOpenQuestionModal] = useState(false);
-  const { data: user, isLoading: loadingUser } = api.user.get.useQuery();
+  const [openCategoryModal, setOpenCategoryModal] = useState(false);
 
   // trpc cache context
   const ctx = api.useContext();
+
+  const { data: user, isLoading: loadingUser } = api.user.get.useQuery();
+  const { data: categories } = api.questionCategory.getAll.useQuery();
   const { mutate: saveQuestion, isLoading: isSavingQuestion } =
     api.question.create.useMutation({
       onSuccess: () => {
         toast.success("Question successfully added");
         setOpenQuestionModal(false);
         void ctx.question.getAll.invalidate();
+      },
+      onError: (e) => toast(e.message),
+    });
+
+  const { isLoading: isSavingCategory, mutate: saveCategory } =
+    api.questionCategory.add.useMutation({
+      onSuccess: () => {
+        toast.success("Category successfully added");
+        setOpenCategoryModal(false);
+        void ctx.questionCategory.getAll.invalidate();
       },
       onError: (e) => toast(e.message),
     });
@@ -36,14 +50,14 @@ const Header = () => {
           className="color-black rounded bg-yellow-400 px-4 py-2 transition-all hover:bg-yellow-500"
           onClick={() => setOpenQuestionModal(true)}
         >
-          Add Question
+          Adauga Intrebare
         </button>
         {user?.isAdmin && (
           <button
             className="color-black rounded bg-slate-400 px-4 py-2 text-white transition-all hover:bg-slate-500"
-            onClick={() => setOpenQuestionModal(true)}
+            onClick={() => setOpenCategoryModal(true)}
           >
-            Add Question Category
+            Adauga Categorie
           </button>
         )}
         <SignedIn>
@@ -58,8 +72,21 @@ const Header = () => {
         setOpen={setOpenQuestionModal}
       >
         <AddQuestionForm
+          categories={categories?.map((c) => ({ label: c.name, value: c.id }))}
           mutationInProgress={isSavingQuestion}
           onSubmit={(data) => saveQuestion(data)}
+        />
+      </Modal>
+      <Modal
+        title="Adauga o categorie"
+        description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint nam
+     eligendi quia met consectetur adipisicing?"
+        open={openCategoryModal}
+        setOpen={setOpenCategoryModal}
+      >
+        <AddQuestionCategoryForm
+          mutationInProgress={isSavingCategory}
+          onSubmit={(data) => saveCategory(data)}
         />
       </Modal>
     </header>

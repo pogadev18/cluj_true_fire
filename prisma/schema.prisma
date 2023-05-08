@@ -9,14 +9,14 @@ datasource db {
 }
 
 model Question {
-  id        String             @id @default(cuid())
-  authorId  String
-  createdAt DateTime           @default(now())
-  isSolved  Boolean            @default(false)
-  title     String
-  details   String?            @db.VarChar(255)
-  answers   Answer[]
-  category  QuestionCategory[]
+  id         String             @id @default(cuid())
+  authorId   String
+  createdAt  DateTime           @default(now())
+  isSolved   Boolean            @default(false)
+  title      String
+  details    String?            @db.VarChar(255)
+  answers    Answer[]
+  categories QuestionCategory[]
 
   @@unique([authorId, title])
 }
@@ -38,5 +38,5 @@ model QuestionCategory {
   id        String     @id @default(cuid())
   createdAt DateTime   @default(now())
   name      String     @unique
-  question  Question[]
+  questions Question[]
 }

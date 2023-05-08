@@ -1,18 +1,13 @@
 import type { FC } from "react";
 import type { SubmitHandler } from "react-hook-form/dist/types/form";
 import * as z from "zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Select from "react-select";
 
 import { LoadingSpinner } from "./LoadingSpinner";
 
-import { categories } from "~/utils/constants";
-
 export const formSchema = z.object({
-  categories: z
-    .array(z.string(), { required_error: "Selecteaza minim o categorie" })
-    .nonempty("Selecteaza minim o categorie"),
+  name: z.string().nonempty("Adauga o categorie"),
 });
 
 export type FormData = z.infer<typeof formSchema>;
@@ -27,8 +22,8 @@ const AddQuestionCategoryForm: FC<AddQuestionCategoryFormProps> = ({
   onSubmit,
 }) => {
   const {
-    control,
     handleSubmit,
+    register,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -37,25 +32,15 @@ const AddQuestionCategoryForm: FC<AddQuestionCategoryFormProps> = ({
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <div className="form-control mb-5">
-        <label htmlFor="categories">Categorie</label>
-        <Controller
-          name="categories"
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              options={categories}
-              value={categories.filter((c) =>
-                (field.value || []).includes(c.value)
-              )}
-              isMulti
-              placeholder="Selecteaza categoriile"
-              onChange={(values) => field.onChange(values.map((v) => v.value))}
-            />
-          )}
+        <label htmlFor="categorie">Categorie</label>
+        <input
+          className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          type="text"
+          id="categorie"
+          {...register("name")}
         />
-        {errors.categories && (
-          <p className="text-sm  text-red-600">{errors.categories.message}</p>
+        {errors.name && (
+          <p className="text-sm  text-red-600">{errors.name.message}</p>
         )}
       </div>
 
