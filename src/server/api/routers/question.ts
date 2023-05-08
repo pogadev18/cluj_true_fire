@@ -1,4 +1,4 @@
-import type { Answer, Question } from "@prisma/client";
+import type { Answer, Question, QuestionCategory } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
@@ -70,7 +70,7 @@ export const questionRouter = createTRPCRouter({
         const questionData = (await addUserDataToEntity(questions)).map(
           (question) => ({
             ...question,
-            content: question.content as Question,
+            content: question.content as (typeof questions)[0],
           })
         );
 
