@@ -51,7 +51,7 @@ const Question: FC<QuestionWithUser> = ({ author, content }) => {
       </div>
       <div
         className={`question-status rounded-100 h-8 w-8 rounded-full ${
-          content.isSolved ? "bg-green-700" : "bg-red-700"
+          content.isSolved ? "bg-green-600" : "bg-red-700"
         }`}
       />
     </li>

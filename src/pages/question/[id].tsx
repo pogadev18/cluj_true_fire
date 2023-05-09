@@ -10,8 +10,12 @@ import PageLayout from "~/components/PageLayout";
 import { LoadingSpinner } from "~/components/LoadingSpinner";
 import SubmitAnswerForm from "~/components/SubmitAnswerForm";
 import Answer from "~/components/Answer";
+import { useState } from "react";
+import Modal from "~/components/Modal";
 
 const SingeQuestionPage: NextPage = () => {
+  const [showResolveModal, setShowResolveModal] = useState(false);
+
   // trpc cache context
   const ctx = api.useContext();
 
@@ -35,6 +39,15 @@ const SingeQuestionPage: NextPage = () => {
       },
     });
 
+  const { isLoading: updatingQuestion, mutate: updateQuestion } =
+    api.question.update.useMutation({
+      onSuccess: () => {
+        toast.success("Question successfully updated");
+        void ctx.question.getById.invalidate({ id: questionId as string });
+        setShowResolveModal(false);
+      },
+    });
+
   return (
     <>
       <Head>
@@ -50,39 +63,43 @@ const SingeQuestionPage: NextPage = () => {
             <section className="content-wrapper flex gap-10">
               <div className="left-side basis-4/12">
                 <div className="title-wrapper mb-5">
-                  {data?.question.isUserOwner && (
-                    <div className="resolve-question mb-3">
-                      <button className="font-bold uppercase underline">
-                        Resolve
-                      </button>
-                    </div>
-                  )}
-                  <h1 className="text-3xl">{data?.question?.content.title} </h1>
+                  {data?.question.isUserOwner &&
+                    !data.question.content.isSolved && (
+                      <div className="resolve-question mb-3">
+                        <button
+                          onClick={() => setShowResolveModal(true)}
+                          className="font-bold uppercase underline"
+                        >
+                          Resolve
+                        </button>
+                      </div>
+                    )}
+                  <h1 className="text-3xl">{data?.question?.content.title}</h1>
                   {data?.question?.content.details && (
                     <>
                       <p>{data?.question?.content?.details}</p>
                     </>
                   )}
-                  <p className="mt-3">
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                    Assumenda nulla perferendis vitae necessitatibus dolorum
-                    omnis molestias doloremque, inventore quis magnam nam,
-                    cumque sed quo magni sequi ipsam reiciendis cum recusandae!
-                  </p>
                 </div>
-                <div className="answerForm">
-                  <div className=" py-5">
-                    <SubmitAnswerForm
-                      mutationInProgress={submittingAnswer}
-                      onSubmit={(data) =>
-                        submitAnswer({
-                          ...data,
-                          questionId: questionId as string,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+                {data?.question.content.isSolved ? (
+                  <p className="mt-5">aceasta intrebare a fost rezolvata</p>
+                ) : (
+                  <>
+                    <div className="answerForm">
+                      <div className=" py-5">
+                        <SubmitAnswerForm
+                          mutationInProgress={submittingAnswer}
+                          onSubmit={(data) =>
+                            submitAnswer({
+                              ...data,
+                              questionId: questionId as string,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
               <aside className="right-side basis-8/12">
                 <div className="answer-list h-screen border-l border-slate-400 pl-5">
@@ -96,6 +113,28 @@ const SingeQuestionPage: NextPage = () => {
             </section>
           )}
         </section>
+        <Modal
+          open={showResolveModal}
+          setOpen={setShowResolveModal}
+          title="Inchide intrebarea"
+          description="Odata ce intrebarea este inchisa, nu mai poate fi modificata. Raspunsurile vor fi in continuare vizibile!"
+        >
+          {updatingQuestion ? (
+            <LoadingSpinner />
+          ) : (
+            <button
+              onClick={() =>
+                updateQuestion({
+                  isSolved: true,
+                  questionId: questionId as string,
+                })
+              }
+              className="mb-3 w-1/2 rounded bg-green-500 px-4 py-2 font-semibold uppercase text-white transition-all hover:bg-green-600"
+            >
+              inchide
+            </button>
+          )}
+        </Modal>
       </PageLayout>
     </>
   );

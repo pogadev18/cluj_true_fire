@@ -13,6 +13,11 @@ const paginationSchema = z.object({
   cursor: z.string().nullish(),
 });
 
+const updateSchema = z.object({
+  isSolved: z.boolean(),
+  questionId: z.string(),
+});
+
 export const questionRouter = createTRPCRouter({
   create: protectedProcedure
     .input(formSchema)
@@ -121,5 +126,15 @@ export const questionRouter = createTRPCRouter({
           };
         }),
       };
+    }),
+  update: protectedProcedure
+    .input(updateSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { questionId, isSolved } = input;
+
+      return await ctx.prisma.question.update({
+        where: { id: questionId },
+        data: { isSolved },
+      });
     }),
 });

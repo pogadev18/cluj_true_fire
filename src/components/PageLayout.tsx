@@ -6,10 +6,15 @@ import { LoadingPage } from "./LoadingSpinner";
 
 /*
 TODO:
- - resolve question
- - answer from author (visible for everyone, on top somehow)
- - rate limit with upstash
+ - resolve question - done
+ - answer from author (visible for everyone, on top somehow) - done
  - questions pagination
+ - no data component (no questions and no answers)
+
+ - edit question (title and details)
+ - display answers count
+ - search questions & filter by category
+ - rate limit with upstash
 */
 
 const PageLayout = (props: PropsWithChildren) => {
