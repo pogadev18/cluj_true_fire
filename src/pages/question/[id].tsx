@@ -1,3 +1,4 @@
+import React from "react";
 import Head from "next/head";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -28,11 +29,20 @@ const SingeQuestionPage: NextPage = () => {
     { enabled: !!questionId }
   );
 
+  const { isLoading: loadingAnswers, data: answers } =
+    api.answer.getAll.useInfiniteQuery(
+      { limit: 10, questionId: questionId as string },
+      {
+        enabled: !!questionId,
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
+      }
+    );
+
   const { mutate: submitAnswer, isLoading: submittingAnswer } =
     api.answer.add.useMutation({
       onSuccess: () => {
         toast.success("Answer successfully added");
-        void ctx.question.getById.invalidate({ id: questionId as string });
+        void ctx.answer.getAll.invalidate({ questionId: questionId as string });
       },
       onError: (error) => {
         toast.error(error.message);
@@ -60,8 +70,8 @@ const SingeQuestionPage: NextPage = () => {
           {loadingQuestion ? (
             <LoadingSpinner />
           ) : (
-            <section className="content-wrapper flex gap-10">
-              <div className="left-side basis-4/12">
+            <section className="content-wrapper relative flex gap-10">
+              <div className="left-side sticky top-5 basis-4/12 self-start">
                 <div className="title-wrapper mb-5">
                   {data?.question.isUserOwner &&
                     !data.question.content.isSolved && (
@@ -101,15 +111,23 @@ const SingeQuestionPage: NextPage = () => {
                   </>
                 )}
               </div>
-              <aside className="right-side basis-8/12">
-                <div className="answer-list h-screen border-l border-slate-400 pl-5">
-                  <ul className="mt-5">
-                    {data?.answers?.map((answer) => (
-                      <Answer key={answer.content.id} {...answer} />
-                    ))}
-                  </ul>
-                </div>
-              </aside>
+              {loadingAnswers ? (
+                <LoadingSpinner />
+              ) : (
+                <aside className="right-side basis-8/12">
+                  <div className="answer-list pl-5">
+                    <ul className="mt-5">
+                      {answers?.pages?.map((page) => (
+                        <React.Fragment key={page.nextCursor ?? "last page"}>
+                          {page.answers.map((answer) => (
+                            <Answer key={answer.content.id} {...answer} />
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </ul>
+                  </div>
+                </aside>
+              )}
             </section>
           )}
         </section>

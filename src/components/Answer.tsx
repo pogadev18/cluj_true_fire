@@ -7,10 +7,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
-type QuestionWithAnswer =
-  RouterOutputs["question"]["getById"]["answers"][number];
+type AnswerWithUser = RouterOutputs["answer"]["getAll"]["answers"][number];
 
-const Answer: FC<QuestionWithAnswer> = ({ author, content, isUserOwner }) => {
+const Answer: FC<AnswerWithUser> = ({ author, content, isUserOwner }) => {
   console.log(content);
   return (
     <li key={content.id} className="mb-5">

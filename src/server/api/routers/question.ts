@@ -8,7 +8,7 @@ import { formSchema } from "~/components/AddQuestionForm";
 import { addUserDataToEntity } from "~/server/helpers/findUserInClerk";
 import { z } from "zod";
 
-const paginationSchema = z.object({
+export const paginationSchema = z.object({
   limit: z.number().min(1).max(100).nullish(),
   cursor: z.string().nullish(),
 });
@@ -97,12 +97,6 @@ export const questionRouter = createTRPCRouter({
         where: { id: input.id },
       });
 
-      // grab all the answers related to this question and send them to client
-      const answers = await ctx.prisma.answer.findMany({
-        where: { questionId: input.id },
-        orderBy: { createdAt: "desc" },
-      });
-
       if (!question)
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -110,7 +104,6 @@ export const questionRouter = createTRPCRouter({
         });
 
       const questionAndUserData = (await addUserDataToEntity([question]))[0];
-      const answerAndUserData = await addUserDataToEntity(answers);
       // todo: mabye try to cast this in `findUserInClert.ts`? - tried with typegurad function but not worked
       return {
         question: {
@@ -118,13 +111,6 @@ export const questionRouter = createTRPCRouter({
           content: questionAndUserData?.content as Question,
           isUserOwner: ctx.auth.userId === questionAndUserData?.author.id,
         },
-        answers: answerAndUserData.map((answer) => {
-          return {
-            ...answer,
-            content: answer?.content as Answer,
-            isUserOwner: ctx.auth.userId === answer?.author.id,
-          };
-        }),
       };
     }),
   update: protectedProcedure

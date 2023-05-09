@@ -25,13 +25,14 @@ model Answer {
   createdAt DateTime @default(now())
 
   id       String @id @default(cuid())
-  content  String
+  content  String 
   authorId String
 
   question   Question @relation(fields: [questionId], references: [id])
   questionId String
 
   @@index([questionId])
+  @@unique([content, questionId])
 }
 
 model QuestionCategory {
