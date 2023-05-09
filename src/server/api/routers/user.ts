@@ -14,10 +14,10 @@ export const userRouter = createTRPCRouter({
       });
     }
 
+    const isUserAdmin = (user.privateMetadata.admin as boolean) ?? false;
+
     if (user) {
-      return {
-        isAdmin: user.privateMetadata.admin ?? false,
-      };
+      return isUserAdmin;
     }
   }),
 });
