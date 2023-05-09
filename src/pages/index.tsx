@@ -35,8 +35,6 @@ const Home: NextPage = () => {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
-  console.log("re-rendering!");
-
   return (
     <>
       <Head>
