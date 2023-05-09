@@ -4,6 +4,14 @@ import Header from "./Header";
 import { api } from "~/utils/api";
 import { LoadingPage } from "./LoadingSpinner";
 
+/*
+TODO:
+ - resolve question
+ - answer from author (visible for everyone, on top somehow)
+ - rate limit with upstash
+ - questions pagination
+*/
+
 const PageLayout = (props: PropsWithChildren) => {
   const { data: isUserAdmin, isLoading: loadingUser } = api.user.get.useQuery();
   const { data: categories, isLoading: loadingCategories } =

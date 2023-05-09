@@ -10,10 +10,15 @@ dayjs.extend(relativeTime);
 type QuestionWithAnswer =
   RouterOutputs["question"]["getById"]["answers"][number];
 
-const Answer: FC<QuestionWithAnswer> = ({ author, content }) => {
+const Answer: FC<QuestionWithAnswer> = ({ author, content, isUserOwner }) => {
+  console.log(content);
   return (
     <li key={content.id} className="mb-5">
-      <figure className="mx-auto max-w-screen-md rounded bg-slate-200 py-3 text-center shadow-sm">
+      <figure
+        className={`mx-auto rounded ${
+          isUserOwner ? "bg-lime-400" : "bg-slate-200"
+        } py-3 text-center shadow-sm`}
+      >
         <svg
           aria-hidden="true"
           className="mx-auto mb-3 h-6 w-6 text-gray-400 dark:text-gray-600"
@@ -27,7 +32,7 @@ const Answer: FC<QuestionWithAnswer> = ({ author, content }) => {
           />
         </svg>
         <blockquote>
-          <p className="text-xl font-medium italic text-gray-900 ">
+          <p className="text-xl font-medium text-gray-900 ">
             {content.content}
           </p>
         </blockquote>
@@ -41,7 +46,7 @@ const Answer: FC<QuestionWithAnswer> = ({ author, content }) => {
           />
           <div className="flex items-center divide-x-2 divide-gray-500 dark:divide-gray-700">
             <cite className="pr-3 font-medium text-gray-900 ">
-              {author.email}
+              {author.email} {isUserOwner && "(autor)"}
             </cite>
             <cite className="pl-3 text-sm text-gray-500 ">
               {dayjs(content.createdAt).fromNow()}

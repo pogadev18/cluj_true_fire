@@ -47,46 +47,53 @@ const SingeQuestionPage: NextPage = () => {
           {loadingQuestion ? (
             <LoadingSpinner />
           ) : (
-            <div className="flex items-center justify-between">
-              <div className="question-wrapper flex-grow">
-                <div className="title-wrapper mb-5 flex items-center gap-5">
-                  <h1 className="text-3xl">{data?.question?.content.title} </h1>
+            <section className="content-wrapper flex gap-10">
+              <div className="left-side basis-4/12">
+                <div className="title-wrapper mb-5">
                   {data?.question.isUserOwner && (
-                    <div className="resolve-question">
+                    <div className="resolve-question mb-3">
                       <button className="font-bold uppercase underline">
                         Resolve
                       </button>
                     </div>
                   )}
-                </div>
-                <div className="answerFormAndAnswerListWrapper flex gap-10">
-                  <div className="answerForm flex-1">
-                    {data?.question?.content.details && (
+                  <h1 className="text-3xl">{data?.question?.content.title} </h1>
+                  {data?.question?.content.details && (
+                    <>
                       <p>{data?.question?.content?.details}</p>
-                    )}
-                    <div className=" py-5">
-                      <SubmitAnswerForm
-                        mutationInProgress={submittingAnswer}
-                        onSubmit={(data) =>
-                          submitAnswer({
-                            ...data,
-                            questionId: questionId as string,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="answer-list flex-1 border-l border-slate-400 pl-5">
-                    <h2 className="text-2xl">Raspunsuri</h2>
-                    <ul className="mt-5">
-                      {data?.answers?.map((answer) => (
-                        <Answer key={answer.content.id} {...answer} />
-                      ))}
-                    </ul>
+                    </>
+                  )}
+                  <p className="mt-3">
+                    Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                    Assumenda nulla perferendis vitae necessitatibus dolorum
+                    omnis molestias doloremque, inventore quis magnam nam,
+                    cumque sed quo magni sequi ipsam reiciendis cum recusandae!
+                  </p>
+                </div>
+                <div className="answerForm">
+                  <div className=" py-5">
+                    <SubmitAnswerForm
+                      mutationInProgress={submittingAnswer}
+                      onSubmit={(data) =>
+                        submitAnswer({
+                          ...data,
+                          questionId: questionId as string,
+                        })
+                      }
+                    />
                   </div>
                 </div>
               </div>
-            </div>
+              <aside className="right-side basis-8/12">
+                <div className="answer-list h-screen border-l border-slate-400 pl-5">
+                  <ul className="mt-5">
+                    {data?.answers?.map((answer) => (
+                      <Answer key={answer.content.id} {...answer} />
+                    ))}
+                  </ul>
+                </div>
+              </aside>
+            </section>
           )}
         </section>
       </PageLayout>

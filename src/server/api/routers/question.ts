@@ -117,6 +117,7 @@ export const questionRouter = createTRPCRouter({
           return {
             ...answer,
             content: answer?.content as Answer,
+            isUserOwner: ctx.auth.userId === answer?.author.id,
           };
         }),
       };
