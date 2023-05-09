@@ -10,7 +10,6 @@ dayjs.extend(relativeTime);
 type AnswerWithUser = RouterOutputs["answer"]["getAll"]["answers"][number];
 
 const Answer: FC<AnswerWithUser> = ({ author, content, isUserOwner }) => {
-  console.log(content);
   return (
     <li key={content.id} className="mb-5">
       <figure

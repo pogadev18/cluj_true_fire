@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Head from "next/head";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
+import { useInView } from "react-intersection-observer";
 
 import { api } from "~/utils/api";
 import { META_TITLE } from "~/utils/constants";
@@ -15,6 +16,7 @@ import { useState } from "react";
 import Modal from "~/components/Modal";
 
 const SingeQuestionPage: NextPage = () => {
+  const { ref, inView } = useInView();
   const [showResolveModal, setShowResolveModal] = useState(false);
 
   // trpc cache context
@@ -29,14 +31,19 @@ const SingeQuestionPage: NextPage = () => {
     { enabled: !!questionId }
   );
 
-  const { isLoading: loadingAnswers, data: answers } =
-    api.answer.getAll.useInfiniteQuery(
-      { limit: 10, questionId: questionId as string },
-      {
-        enabled: !!questionId,
-        getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
-      }
-    );
+  const {
+    isLoading: loadingAnswers,
+    data: answers,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = api.answer.getAll.useInfiniteQuery(
+    { limit: 8, questionId: questionId as string },
+    {
+      enabled: !!questionId,
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? false,
+    }
+  );
 
   const { mutate: submitAnswer, isLoading: submittingAnswer } =
     api.answer.add.useMutation({
@@ -57,6 +64,13 @@ const SingeQuestionPage: NextPage = () => {
         setShowResolveModal(false);
       },
     });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      const fetchMoreQuestions = async () => await fetchNextPage();
+      void fetchMoreQuestions();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   return (
     <>
@@ -125,6 +139,16 @@ const SingeQuestionPage: NextPage = () => {
                         </React.Fragment>
                       ))}
                     </ul>
+                    {isFetchingNextPage && (
+                      <div className="flex justify-center py-10">
+                        <LoadingSpinner size={40} />
+                      </div>
+                    )}
+                    <div
+                      className="invisible"
+                      ref={ref}
+                      data-loadmorequestions="load-more-questions"
+                    />
                   </div>
                 </aside>
               )}
