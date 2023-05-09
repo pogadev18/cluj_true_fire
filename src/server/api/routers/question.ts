@@ -1,4 +1,4 @@
-import type { Answer, Question, QuestionCategory } from "@prisma/client";
+import type { Answer, Question } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
