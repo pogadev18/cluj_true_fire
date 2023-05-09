@@ -8,6 +8,11 @@ import { formSchema } from "~/components/AddQuestionForm";
 import { addUserDataToEntity } from "~/server/helpers/findUserInClerk";
 import { z } from "zod";
 
+const paginationSchema = z.object({
+  limit: z.number().min(1).max(100).nullish(),
+  cursor: z.string().nullish(),
+});
+
 export const questionRouter = createTRPCRouter({
   create: protectedProcedure
     .input(formSchema)
@@ -15,12 +20,19 @@ export const questionRouter = createTRPCRouter({
       try {
         const authorId = ctx.auth.userId;
 
-        const questionData = {
-          ...input,
-          authorId,
-        };
+        const clientCategories = input.categories?.map((cat) => ({
+          name: cat,
+        }));
 
-        await ctx.prisma.question.create({ data: questionData });
+        await ctx.prisma.question.create({
+          data: {
+            ...input,
+            authorId,
+            categories: {
+              connect: [...clientCategories],
+            },
+          },
+        });
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           if (error.code === "P2002") {
@@ -32,25 +44,47 @@ export const questionRouter = createTRPCRouter({
         }
       }
     }),
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const questions = await ctx.prisma.question.findMany({
-        take: 100,
-        orderBy: { createdAt: "desc" },
-      });
+  getAll: protectedProcedure
+    .input(paginationSchema)
+    .query(async ({ ctx, input }) => {
+      try {
+        const limit = input.limit ?? 10;
+        const { cursor } = input;
 
-      // todo: try to find a better solution where to cast this (same as below)
-      return (await addUserDataToEntity(questions)).map((question) => ({
-        ...question,
-        content: question.content as Question,
-      }));
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Unfornately, we could not get the questions at this time.",
-      });
-    }
-  }),
+        const questions = await ctx.prisma.question.findMany({
+          take: limit + 1,
+          cursor: cursor ? { id: cursor } : undefined,
+          skip: 0,
+          orderBy: { createdAt: "desc" },
+          include: { categories: true },
+        });
+
+        let nextCursor: typeof cursor | undefined = undefined;
+
+        if (questions.length > limit) {
+          const nextQuestion = questions.pop();
+          nextCursor = nextQuestion?.id;
+        }
+
+        // todo: try to find a better solution where to cast this (same as getById Query)
+        const questionData = (await addUserDataToEntity(questions)).map(
+          (question) => ({
+            ...question,
+            content: question.content as (typeof questions)[0],
+          })
+        );
+
+        return {
+          questions: questionData,
+          nextCursor,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Unfornately, we could not get the questions at this time.",
+        });
+      }
+    }),
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

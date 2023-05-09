@@ -1,7 +1,9 @@
+import React, { useEffect } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import PageLayout from "~/components/PageLayout";
 import { toast } from "react-hot-toast";
+import { useInView } from "react-intersection-observer";
 
 import { META_TITLE } from "~/utils/constants";
 import { api } from "~/utils/api";
@@ -9,15 +11,29 @@ import { LoadingSpinner } from "~/components/LoadingSpinner";
 import Question from "~/components/Question";
 
 const Home: NextPage = () => {
+  const { ref, inView } = useInView();
   const {
     data: questions,
     isLoading: loadingQuestions,
     error,
-  } = api.question.getAll.useQuery();
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = api.question.getAll.useInfiniteQuery(
+    { limit: 10 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor ?? false }
+  );
 
   if (error) {
     toast.error(error.message);
   }
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      const fetchMoreQuestions = async () => await fetchNextPage();
+      void fetchMoreQuestions();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   return (
     <>
@@ -44,10 +60,24 @@ const Home: NextPage = () => {
                 </p>
               </div>
               <ul>
-                {questions?.map((question) => (
-                  <Question key={question.content.id} {...question} />
+                {questions?.pages?.map((page) => (
+                  <React.Fragment key={page.nextCursor ?? "last page"}>
+                    {page.questions.map((question) => (
+                      <Question key={question.content.id} {...question} />
+                    ))}
+                  </React.Fragment>
                 ))}
               </ul>
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-10">
+                  <LoadingSpinner size={40} />
+                </div>
+              )}
+              <div
+                className="invisible"
+                ref={ref}
+                data-loadmorequestions="load-more-questions"
+              />
             </>
           )}
         </section>

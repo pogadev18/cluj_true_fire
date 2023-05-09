@@ -49,27 +49,32 @@ const SingeQuestionPage: NextPage = () => {
           ) : (
             <div className="flex items-center justify-between">
               <div className="question-wrapper flex-grow">
-                <h1 className="mb-5 text-3xl">
-                  {data?.question?.content.title}
-                </h1>
+                <div className="title-wrapper mb-5 flex items-center gap-5">
+                  <h1 className="text-3xl">{data?.question?.content.title} </h1>
+                  {data?.question.isUserOwner && (
+                    <div className="resolve-question">
+                      <button className="font-bold uppercase underline">
+                        Resolve
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="answerFormAndAnswerListWrapper flex gap-10">
                   <div className="answerForm flex-1">
                     {data?.question?.content.details && (
                       <p>{data?.question?.content?.details}</p>
                     )}
-                    {!data?.question.isUserOwner && (
-                      <div className=" py-5">
-                        <SubmitAnswerForm
-                          mutationInProgress={submittingAnswer}
-                          onSubmit={(data) =>
-                            submitAnswer({
-                              ...data,
-                              questionId: questionId as string,
-                            })
-                          }
-                        />
-                      </div>
-                    )}
+                    <div className=" py-5">
+                      <SubmitAnswerForm
+                        mutationInProgress={submittingAnswer}
+                        onSubmit={(data) =>
+                          submitAnswer({
+                            ...data,
+                            questionId: questionId as string,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="answer-list flex-1 border-l border-slate-400 pl-5">
                     <h2 className="text-2xl">Raspunsuri</h2>
@@ -81,13 +86,6 @@ const SingeQuestionPage: NextPage = () => {
                   </div>
                 </div>
               </div>
-              {data?.question.isUserOwner && (
-                <div className="resolve-question">
-                  <button className="rounded-md p-4 font-bold underline">
-                    Resolve
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </section>

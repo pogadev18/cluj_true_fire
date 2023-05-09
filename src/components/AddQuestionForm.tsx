@@ -1,22 +1,31 @@
 import type { FC } from "react";
 import type { SubmitHandler } from "react-hook-form/dist/types/form";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Select from "react-select";
 
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export const formSchema = z.object({
   title: z
     .string()
-    .min(10, "Title is required (min 20 characters)")
-    .max(40, "Title is too long (max 40 characters)"),
-  details: z.string().max(255, "Description is too long").optional(),
+    .min(10, "Titlul intrebarii este obligatoriu (min 20 caractere)"),
+  categories: z
+    .array(z.string(), { required_error: "Selecteaza minim o categorie" })
+    .nonempty("Selecteaza minim o categorie"),
+  details: z
+    .string()
+    .optional()
+    .refine((details) => !details || details.length >= 50, {
+      message: "Descrierea este prea scruta (minim 50 de caractere)",
+    }),
 });
 
 export type FormData = z.infer<typeof formSchema>;
 
 export type AddQuestionFormProps = {
+  categories: { label: string; value: string }[] | undefined;
   onSubmit: SubmitHandler<FormData>;
   mutationInProgress: boolean;
 };
@@ -24,19 +33,22 @@ export type AddQuestionFormProps = {
 const AddQuestionForm: FC<AddQuestionFormProps> = ({
   mutationInProgress,
   onSubmit,
+  categories,
 }) => {
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <div className="form-control mb-5">
-        <label htmlFor="title">Title</label>
+        <label htmlFor="title">Titlu</label>
         <input
           className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           type="text"
@@ -48,7 +60,29 @@ const AddQuestionForm: FC<AddQuestionFormProps> = ({
         )}
       </div>
       <div className="form-control mb-5">
-        <label htmlFor="details">Details (if you want)</label>
+        <label htmlFor="categories">Categorie</label>
+        <Controller
+          name="categories"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              options={categories}
+              value={categories?.filter((c) =>
+                (field.value || []).includes(c.label)
+              )}
+              isMulti
+              placeholder="Selecteaza categoriile"
+              onChange={(values) => field.onChange(values.map((v) => v.label))}
+            />
+          )}
+        />
+        {errors.categories && (
+          <p className="text-sm  text-red-600">{errors.categories.message}</p>
+        )}
+      </div>
+      <div className="form-control mb-5">
+        <label htmlFor="details">Detalii (daca doresti)</label>
         <textarea
           {...register("details")}
           id="details"

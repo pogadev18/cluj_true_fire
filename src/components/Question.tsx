@@ -8,7 +8,8 @@ import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
-type QuestionWithUser = RouterOutputs["question"]["getAll"][number];
+type QuestionWithUser =
+  RouterOutputs["question"]["getAll"]["questions"][number];
 
 const Question: FC<QuestionWithUser> = ({ author, content }) => {
   return (
@@ -36,15 +37,23 @@ const Question: FC<QuestionWithUser> = ({ author, content }) => {
           <span className="text-2xl">
             <Link href={`/question/${content.id}`}>{content.title}</Link>
           </span>
+          <ul className="flex gap-2">
+            {content?.categories?.map((category) => (
+              <li
+                className="inline-block rounded bg-purple-400 px-3 text-sm font-semibold text-white shadow-sm"
+                key={category.id}
+              >
+                {category.name}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div
-        className={`question-status rounded-md p-3 py-1 ${
-          content.isSolved ? "bg-green-600" : "bg-red-500"
-        }  text-white`}
-      >
-        {content.isSolved ? "solved" : "unresolved"}
-      </div>
+        className={`question-status rounded-100 h-8 w-8 rounded-full ${
+          content.isSolved ? "bg-green-700" : "bg-red-700"
+        }`}
+      />
     </li>
   );
 };
